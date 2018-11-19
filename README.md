@@ -6,6 +6,7 @@ then performs Monte Carlo simulation to figure out playoff odds, etc.
 
 Output looks something like this:
 
+```
 #   Player          Playoff%   Bye% Final4% Final2% Champ% AvgWins  AvgPts
  1   xxxxxxxxxxxxxx     1.000  0.964   0.979   0.572  0.371    9.41 1692.35
  2   xxxxxxxxxxxxxx     1.000  0.836   0.916   0.432  0.169    9.41 1580.50
@@ -19,9 +20,11 @@ Output looks something like this:
  10  xxxxxxxxxxxxxx     0.000  0.000   0.000   0.000  0.000    3.73 1540.07
  11  xxxxxxxxxxxxxx     0.000  0.000   0.000   0.000  0.000    3.43 1309.24
  12  xxxxxxxxxxxxxx     0.000  0.000   0.000   0.000  0.000    2.54 1190.13
- 
+```
+
 it doesn't currently support divisions. to add that support, would take some work 
--- need to parse more html to determine the divisions
--- need to modify how playoff berths and byes are decided
--- need to add division keys to team class
+* need to parse more html to determine the divisions
+* need to modify how playoff berths and byes are decided
+* need to add division keys to team class
+
 probably I won't do this, unless I get a few requests
