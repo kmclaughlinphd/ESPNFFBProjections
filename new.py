@@ -4,108 +4,10 @@ import sys, os
 import numpy as np
 import csv
 
-class team(object):
-  def __init__(self, teamName, W, score):
-    self.teamName = teamName
-    self.W = W
-    self.scores = []
-    self.scores.append(float(score))
+sys.path.append('.')
+from classes import *
 
-    self.futW = 0
-    self.futPts = 0
-
-    self.avgW = 0
-    self.avgPts = 0
-
-    # regular season finishes
-    self.inPlayoffs = 0
-    self.firstRoundBye = 0
-
-    # playoff finishes
-    self.final4 = 0
-    self.final2 = 0
-    self.champ = 0
-
-
-  def addGame(self, W, score):
-    self.W += W
-    self.scores.append(float(score))
-
-##  def avg(self):
-##    return np.mean(self.scores)
-##
-##  def std(self):
-##    return np.std(self.scores)
-
-  def ev(self):
-    return np.mean(self.scores)
-
-  def spread(self):
-    return np.std(self.scores)
-
-
-  def pts(self):
-    return np.sum(self.scores)
-
-  # get totals = base + future
-  def totW(self):
-    return self.W + self.futW
-
-  def totPts(self):
-    return self.pts() + self.futPts
-
-  # reset future stats (simulated)
-  def reset(self):
-    self.futW = 0
-    self.futPts = 0
-
-  # get a random point total
-  def playGame(self):
-    if self.spread() == 0:
-      print 'warning: received spread = 0. Using spread =', 23.50367
-      return np.random.normal(self.ev(), 23.50367)
-    return np.random.normal(self.ev(), self.spread())
-
-  # add future results
-  def addFutRes(self, W, pts):
-    self.futW += W
-    self.futPts += pts
-
-  # playoff counter, used for MC simulation
-  def IncrementPlayoffs(self):
-    self.inPlayoffs += 1
-
-  def IncrementBye(self):
-    self.firstRoundBye += 1
-
-  def addFinal4(self):
-    self.final4 += 1
-
-  def addFinal2(self):
-    self.final2 += 1
-
-  def addChamp(self):
-    self.champ += 1
-
-  # order methods (we don't deal with equality cuz it's pretty narrow
-  def __lt__(self, other):
-    return self.totW() * 1e5 + self.totPts() < other.totW() * 1e5 + other.totPts()
-
-
-# for creating sortable standings for ensemble
-class standing(object):
-
-  def __init__(self, team, player, prob, avgW, avgPts):
-    self.team = team
-    self.player = player
-    self.prob = prob
-    self.avgW = avgW
-    self.avgPts = avgPts
-
-  def __lt__(self, other):
-    return self.prob * 1e10 + self.avgW * 1e5 + self.avgPts < other.prob * 1e10 + other.avgW * 1e5 + other.avgPts
-
-
+# figures out which teams made the playoffs
 def checkPlayoffs(teams):
   teamsList = teams.values()
   teamsList.sort()
@@ -118,12 +20,14 @@ def checkPlayoffs(teams):
   # return ranked teams
   return teamsList
 
-
+# accumulates averages based on simulation -- prob should do this with a class method instead
 def updateStats(teams, sim):
   n = float(sim)
   for team in teams.values():
     team.avgW = (1.0/(n+1.0)) * (team.avgW * sim + team.totW())
     team.avgPts = (1.0/(n+1.0)) * (team.avgPts * sim + team.totPts())
+
+
 
 # create teams from input file
 def createTeams(inputFile):
@@ -155,16 +59,17 @@ def createTeams(inputFile):
 
   return teams
 
+
 # simulate a game
 def faceoff(team1, team2, playoffs=False, champs=False):
   score1 = team1.playGame()
   score2 = team2.playGame()
-  
+
   # we play two weeks if this is the champs
   if champs:
     score1 += team1.playGame()
     score2 += team2.playGame()
-  
+
   if (score1 > score2):
     res = [1,0]
     winner = team1
@@ -178,9 +83,10 @@ def faceoff(team1, team2, playoffs=False, champs=False):
     team2.addFutRes(res[1],score2)
 
   return winner
-  
-  
 
+
+# this will need to be modified based on playoff format. in my league
+# it's w1 top 6 (2 byes), w2 top 4, and w3+w4 championship
 def computePlayoffs(rankedTeams):
 
   #divisional
@@ -209,7 +115,7 @@ def computePlayoffs(rankedTeams):
 
 if __name__ == '__main__':
 
-  NSims = 1000
+  NSims = 1000  # i usually run 10k
 
   if len(sys.argv) <= 1:
     print 'usage: ' + str(sys.argv[0]) + ' input'
@@ -217,15 +123,16 @@ if __name__ == '__main__':
 
   teams = createTeams(sys.argv[1])
 
+  # need to find a way to automate this step
   for sim in xrange(NSims):
     # week 11
-    faceoff(teams['Keith McLaughlin'], teams['Paul Hyden'])
-    faceoff(teams['Devon Antczak'], teams['Vipon Kawpunna'])
-    faceoff(teams['TJ Snell'], teams['Dean Kruse'])
-    faceoff(teams['Blayne Lee'], teams['William DuBois'])
-    faceoff(teams['hugo rodriguez'], teams['IAN LEE'])
-    faceoff(teams['Jared Rivers'], teams['Kenny Halligan'])
-    
+ #   faceoff(teams['Keith McLaughlin'], teams['Paul Hyden'])
+ #   faceoff(teams['Devon Antczak'], teams['Vipon Kawpunna'])
+ #   faceoff(teams['TJ Snell'], teams['Dean Kruse'])
+ #   faceoff(teams['Blayne Lee'], teams['William DuBois'])
+ #   faceoff(teams['hugo rodriguez'], teams['IAN LEE'])
+ #   faceoff(teams['Jared Rivers'], teams['Kenny Halligan'])
+
     # week 12
     faceoff(teams['hugo rodriguez'], teams['Kenny Halligan'])
     faceoff(teams['Devon Antczak'], teams['Paul Hyden'])
@@ -246,6 +153,8 @@ if __name__ == '__main__':
     # reset future wins/pts
     for team in teams.values():
       team.reset()
+
+
 
   # sims are done, let's get playoff odds
   standings = []
@@ -271,5 +180,5 @@ if __name__ == '__main__':
     print ' ' + line
   print ''
   print ''
-  
+
 
