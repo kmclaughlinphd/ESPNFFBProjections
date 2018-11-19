@@ -2,10 +2,10 @@
 
 import sys, os
 import numpy as np
-import csv
 
 sys.path.append('.')
 from classes import *
+from importL import *
 
 # figures out which teams made the playoffs
 def checkPlayoffs(teams):
@@ -30,32 +30,34 @@ def updateStats(teams, sim):
 
 
 # create teams from input file
-def createTeams(inputFile):
+def createTeams(pastData):
 
   teams = {}
 
-  with open(inputFile, 'rb') as csvfile:
-    readFile = csv.reader(csvfile)
+  for matchup in pastData:
+    team1 = matchup[0]
+    team2 = matchup[1]
+    score1 = float(matchup[2])
+    score2 = float(matchup[3])
 
-    for readLine in readFile:
-      # we make no attempt to validate the data
-      if float(readLine[1]) > float(readLine[3]):
+    if score1 > score2:
         result = [1,0] # win, loss
-      elif float(readLine[1]) < float(readLine[3]):
+    elif score1 < score2:
         result = [0,1] # loss, win
-      else:
+    else:
         result = [0.5, 0.5] # tie
 
-      # check if team 1 exists, init team or add game
-      if readLine[0] in teams.keys():
-        teams[readLine[0]].addGame(result[0], readLine[1])
-      else:
-        teams[readLine[0]] = team(readLine[0], result[0], readLine[1])
+    #check if team 1 exists, init team or add game
+    if team1 in teams.keys():
+        teams[team1].addGame(result[0], score1)
+    else:
+        teams[team1] = team(team1, result[0], score1)
 
-      if readLine[2] in teams.keys():
-        teams[readLine[2]].addGame(result[1], readLine[3])
-      else:
-        teams[readLine[2]] = team(readLine[0], result[1], readLine[3])
+    #same for team 2
+    if team2 in teams.keys():
+        teams[team2].addGame(result[1], score2)
+    else:
+        teams[team2] = team(team2, result[1], score2)
 
   return teams
 
@@ -118,28 +120,21 @@ if __name__ == '__main__':
   NSims = 1000  # i usually run 10k
 
   if len(sys.argv) <= 1:
-    print 'usage: ' + str(sys.argv[0]) + ' input'
+    print 'usage: ' + str(sys.argv[0]) + ' LeagueID(int)'
     raise Exception
 
-  teams = createTeams(sys.argv[1])
+  # grab league data
+  PAST, FUTURE = importLeagueData(sys.argv[1])
 
-  # need to find a way to automate this step
+  # create team profiles from the past data
+  teams = createTeams(PAST)
+
+  # run the simulation
   for sim in xrange(NSims):
-    # week 11
- #   faceoff(teams['Keith McLaughlin'], teams['Paul Hyden'])
- #   faceoff(teams['Devon Antczak'], teams['Vipon Kawpunna'])
- #   faceoff(teams['TJ Snell'], teams['Dean Kruse'])
- #   faceoff(teams['Blayne Lee'], teams['William DuBois'])
- #   faceoff(teams['hugo rodriguez'], teams['IAN LEE'])
- #   faceoff(teams['Jared Rivers'], teams['Kenny Halligan'])
 
-    # week 12
-    faceoff(teams['hugo rodriguez'], teams['Kenny Halligan'])
-    faceoff(teams['Devon Antczak'], teams['Paul Hyden'])
-    faceoff(teams['Dean Kruse'], teams['Blayne Lee'])
-    faceoff(teams['Vipon Kawpunna'], teams['TJ Snell'])
-    faceoff(teams['Keith McLaughlin'], teams['IAN LEE'])
-    faceoff(teams['Jared Rivers'], teams['William DuBois'])
+    # simulate each future matchup
+    for matchup in FUTURE:
+        faceoff(teams[matchup[0]], teams[matchup[1]])
 
     # increment playoff counters
     rankedTeams = checkPlayoffs(teams)
@@ -153,8 +148,6 @@ if __name__ == '__main__':
     # reset future wins/pts
     for team in teams.values():
       team.reset()
-
-
 
   # sims are done, let's get playoff odds
   standings = []

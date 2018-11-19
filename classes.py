@@ -7,7 +7,9 @@
 # Created:     19/11/2018
 # Copyright:   (c) keyth 2018
 # Licence:     <your licence>
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+import numpy as np
 
 # class for each team in the league
 ## it is assumed that the league only have 1 division with all the teams
