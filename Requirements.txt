@@ -1,0 +1,5 @@
+numpy
+pandas
+selenium
+chromedriver_binary ==  86.0.4240.22.0
+lxml
