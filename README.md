@@ -35,3 +35,6 @@ Notes:
 * in my league, we run week 12 matchups based on standings, and week 13/14 are reserved for manual playoff entry (because reasons), so you'll want to mess with that too probably. Take a look at sims.py:run_sim(), and sims.py:compute_playoffs() to customize to your league settings.
 * if you want to use this and need help, lmk. i'm not against improving the code, but currently I'm the only user afaik
 * check that your chrome version matches the chrome-driver version in Requirements.txt
+
+Math Note:
+* Weekly scores are simulated assuming normal distribution using a team's average score and standard deviation. I've done some analysis and this is pretty good. I don't find a lot of evidence that adding higher moments would matter, nor have I found that including autocorrelation improves anything (e.g., a team scored well in weeks (5+)6+7, so they'll do better in 8). That last bit was counter intuitive to me since it would seem to better take into account things like successful transactions, injuries, etc., but alas, FFB is random af.
