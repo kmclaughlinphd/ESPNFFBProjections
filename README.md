@@ -31,8 +31,8 @@ probably I won't do this, unless I get a few requests
 
 
 Notes:
-* there is some hardcoded stuff that I'm too lazy to automate -- this includes knowing how many weeks of the schedule to parse, etc. Change the "parse weeks" range in import_webdriver.py:import_league_data()
-* in my league, we run week 12 matchups based on standings, and week 13/14 are reserved for manual playoff entry (because reasons), so you'll want to mess with that too probably. Take a look at sims.py:run_sim(), and sims.py:compute_playoffs() to customize to your league settings.
+* for most cases, you'll want week12swiss=False, unless you're doing something weird like me
+* for most cases, you'll want twoweekfinal=False, unless you run a two week championship game
 * if you want to use this and need help, lmk. i'm not against improving the code, but currently I'm the only user afaik
 * check that your chrome version matches the chrome-driver version in Requirements.txt
 
