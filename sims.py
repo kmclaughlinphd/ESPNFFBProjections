@@ -65,12 +65,12 @@ def create_teams(past_data):
 
 
 # simulate a game
-def faceoff(team1, team2, playoffs=False, champs=False):
+def faceoff(team1, team2, playoffs=False, two_week_faceoff=False):
     score1 = team1.play_game()
     score2 = team2.play_game()
 
     # we play two weeks if this is the champs
-    if champs:
+    if two_week_faceoff:
         score1 += team1.play_game()
         score2 += team2.play_game()
 
@@ -91,7 +91,7 @@ def faceoff(team1, team2, playoffs=False, champs=False):
 
 # this will need to be modified based on playoff format. in my league
 # it's w1 top 6 (2 byes), w2 top 4, and w3+w4 championship
-def compute_playoffs(ranked_teams):
+def compute_playoffs(ranked_teams, two_week_champs):
 
     # divisional
     winner1 = faceoff(ranked_teams[2], ranked_teams[5], playoffs=True)
@@ -116,20 +116,23 @@ def compute_playoffs(ranked_teams):
     winner4.add_final_2()
 
     # finals
-    champ = faceoff(winner3, winner4, playoffs=True, champs=True)
+    if two_week_champs:
+        champ = faceoff(winner3, winner4, playoffs=True, two_week_faceoff=True)
+    else:
+        champ = faceoff(winner3, winner4, playoffs=True, two_week_faceoff=False)
     champ.add_champ()
 
     return
 
 
-def run_sim(sim_ii, teams, future_matchups):
+def run_sim(sim_ii, teams, future_matchups, add_swiss_round=False, two_week_champs=False):
 
     # simulate each future matchup
     for matchup in future_matchups:
         faceoff(teams[matchup[0]], teams[matchup[1]])
 
     # simulate week 12 by swiss pairings (if nec)
-    if len(list(teams.values())[0].scores) < 12:
+    if add_swiss_round:
         pairings = swiss_pairings(teams)
         for pp in pairings:
             faceoff(pp[0], pp[1])
@@ -141,7 +144,7 @@ def run_sim(sim_ii, teams, future_matchups):
     update_stats(teams, sim_ii)
 
     # run playoff simulation
-    compute_playoffs(ranked_teams)
+    compute_playoffs(ranked_teams, two_week_champs)
 
     # reset future wins/pts
     for team in teams.values():

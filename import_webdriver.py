@@ -4,9 +4,8 @@ import chromedriver_binary
 import lxml.html as lh
 import time
 
-def get_league_data(leagueID):
+def get_league_data(league_id):
     driver = webdriver.Chrome()
-    league_id = 1179383
 
     # load web html
     driver.get('https://fantasy.espn.com/football/league/schedule?leagueId=%s' % str(league_id))
@@ -42,9 +41,10 @@ def import_league_data(leagueID):
 
     # scrape league data
     xml_weeks = get_league_data(leagueID)
+    results_total = len(xml_weeks)
 
     # parse weeks
-    for jj in range(12):
+    for jj in range(results_total):
 
         # pull relevant xml from xpath
         week_array = xml_weeks[jj].xpath('//table/tbody/tr') # pull array of tags for each match in week jj
@@ -55,13 +55,14 @@ def import_league_data(leagueID):
             results.append(get_scores(week_array, ii))
 
         # if all scores are non-zero, then we assume the score is final
-        if sum([r[2] + r[3] for r in results]) == 0:
-            # add future matchups if this is week 11 or earlier (for my league, we manually pair week 12)
-            if jj < 11:
+        if len(results) > 0:
+            if sum([r[2] + r[3] for r in results]) == 0:
+                # # add future matchups if this is week 11 or earlier (for my league, we manually pair week 12)
+                # if jj < 11:
                 for r in results:
                     future_matches.append([r[0], r[1]])
-        else:
-            for r in results:
-                past_results.append([r[0], r[1], r[2], r[3]])
+            else:
+                for r in results:
+                    past_results.append([r[0], r[1], r[2], r[3]])
 
     return past_results, future_matches
